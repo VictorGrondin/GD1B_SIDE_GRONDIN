@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Mon 1er jeu Phaser</title>
+        <script
+            src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js">
+        </script>
+        <style type="text/css"> 
+            body { margin: 0; }
+        </style>
+    </head>
+
+
+    <body>
+        <script type="text/javascript">
+            
+            var config = {
+                type: Phaser.AUTO,
+                width: 600, height: 800,
+                physics: {
+                    default: 'arcade',
+                    arcade: {
+                    gravity: { y: 300 },
+                    debug: false
+                    }
+                },
+                input:{gamepad:true},
+
+                scene: {preload: preload, create: create, update: update }
+
+               
+
+            };
+
+            new Phaser.Game(config);
+        
+            function preload(){
+                this.load.spritesheet('perso','assets/perso.png',
+                    { frameWidth: 32, frameHeight: 48 });
+                this.load.image('sheep', 'assets/sheep.png');
+                this.load.image('background', 'assets/backgroundT.png');
+                this.load.image('tuile_dejeu', 'assets/tuilesJeu.png');
+                this.load.tilemapTiledJSON("carte", "assets/level_map.json"); 
+             }
+
+
+            var cursors;
+            var gameOver;
+            var collectsheep
+            var sheep
+            var score = 0; 
+            var scoreText
+
+            gameOver=false;
+            sens=1;
+
+            function create(){
+
+
+                this.add.image(800, 800, 'background'); 
+                const carteDuNiveau = this.add.tilemap("carte");
+
+                const tileset = carteDuNiveau.addTilesetImage(
+                  "jeu_de_tuile",
+                  "tuile_dejeu"
+                );
+
+                // chargement du calque background
+                const Background = carteDuNiveau.createLayer(
+                    "Background",
+                    tileset
+                );
+
+                const Second_Plan = carteDuNiveau.createLayer(
+                    "Second_Plan",
+                    tileset
+                );
+
+                
+                const Premier_Plan = carteDuNiveau.createLayer(
+                     "Premier_Plan",
+                    tileset
+                );
+
+
+                Premier_Plan.setCollisionByProperty({estsolide: true });
+
+                
+
+
+                player = this.physics.add.sprite(1600, 200, 'perso');
+                player.setBounce(0.2);
+                player.setCollideWorldBounds(false);
+
+
+                this.physics.add.collider(player, Premier_Plan); 
+
+
+                // redimentionnement du monde avec les dimensions calculées via tiled
+                this.physics.world.setBounds(0, 0, 1600, 1600);
+                //  ajout du champs de la caméra de taille identique à celle du monde
+                this.cameras.main.setBounds(0, 0, 1600, 1600);
+                // ancrage de la caméra sur le joueur
+                this.cameras.main.startFollow(player); 
+
+
+                this.onWall=false;
+                this.canJump = true;
+
+                this.anims.create({
+                    key: 'left',
+                    frames: this.anims.generateFrameNumbers('perso', {start:0,end:3}),
+                    frameRate: 10,
+                    repeat: -1
+                });
+                this.anims.create({
+                    key: 'turn',
+                    frames: [ { key: 'perso', frame: 5 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'right',
+                    frames: this.anims.generateFrameNumbers('perso', {start:7,end:13}),
+                    frameRate: 10,
+                    repeat: -1
+                });
+                
+                cursors = this.input.keyboard.createCursorKeys();
+                  
+                scoreText=this.add.text(16,16,'score: 0',{fontSize:'32px',fill:'#000'});
+                    //affiche un texte à l’écran, pour le score
+                
+              
+                sheep = this.physics.add.sprite(1450, 280, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan,);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(1250, 180, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(990, 660, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(940, 1060, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(1230, 1070, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(750, 1090, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(140, 1200, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(200, 1060, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(500, 900, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(700, 500, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);                
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(400, 280, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);                
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                sheep = this.physics.add.sprite(200, 280, 'sheep');     
+                this.physics.add.collider(sheep, Premier_Plan);    
+
+
+
+
+                player.setBounce(0.2);
+                player.setCollideWorldBounds(false);
+                    
+                
+
+                    //et collisionne avec les plateformes
+                this.physics.add.overlap(player, sheep, collectsheep, null, this);
+                //le contact perso/étoile ne génère pas de collision (overlap)
+                    //mais en revanche cela déclenche une fonction collectStar
+                  
+                    function collectsheep(player, sheep){
+                        sheep.disableBody(true, true); // l’étoile disparaît
+                        score += 1; //augmente le score de 1
+                        scoreText.setText('Score: ' + score); //met à jour l’affichage du score
+                    }
+            }
+
+
+            canMove=true
+            function update(){
+
+
+
+                if (gameOver){return;}
+
+                if (cursors.left.isDown && canMove){ //si la touche gauche est appuyée
+                    player.setVelocityX(-160); //alors vitesse négative en X
+                    player.anims.play('left', true); //et animation => gauche
+                }
+                else if (cursors.right.isDown && canMove){ //sinon si la touche droite est appuyée
+                    player.setVelocityX(160); //alors vitesse positive en X
+                    player.anims.play('right', true); //et animation => droite
+
+                }
+                else if(canMove){ // sinon
+                    player.setVelocityX(0); //vitesse nulle
+                    player.anims.play('turn'); //animation fait face caméra
+                }
+
+
+
+                if (cursors.up.isDown && player.body.onFloor()){// jump normal
+                    player.setVelocityY(-200);
+                }
+                
+                if (cursors.up.isDown && player.body.onWall()){// walljump
+                    player.setVelocityY(-200);
+                    canMove=false
+                    if(player.body.blocked.right){ // walljump mur droite
+                        player.setVelocityX(-200)
+                        player.anims.play('left', true); 
+                    }
+                    if(player.body.blocked.left){ // walljump mur gauche
+                        player.setVelocityX(200)
+                        player.anims.play('right', true);
+                    }
+                    setTimeout(() => {
+                        canMove=true
+                    }, 200);
+                }
+
+                if (cursors.down.isDown && !player.body.touching.down){ //descendre plus vite
+                    player.setVelocityY(450); 
+                } 
+
+                if(player.body.blocked.down){
+ 
+                    // hero can jump
+                    this.canJump = true;
+
+                    // hero not on the wall
+                    this.onWall = false;
+                }
+
+                if(player.body.blocked.right && player.body.blocked.down){
+ 
+                    // horizontal flipping hero sprite
+                    this.sens = -1;
+                }
+
+                if(player.body.blocked.right && !player.body.blocked.down){
+
+                    this.onWall = true;
+                }
+
+                if(player.body.blocked.left && player.body.blocked.down){
+                    sens = 1;
+                }
+
+                if(player.body.blocked.left && !player.body.blocked.down){
+                    this.onWall = true;
+                    
+                }
+
+
+            }
+
+
+            //function jump(){
+//
+//
+//
+            //    player.setVelocityY(-150); //alors vitesse verticale négative
+//
+            //          // is the hero on a wall?
+            //        if(this.onWall){
+ //
+//
+            //            player.body.velocity.x = 200 * player.scale.x;
+//
+            //        }
+//
+            //        // hero can't jump anymore
+            //        this.canJump = false;
+//
+            //        // hero is not on the wall anymore
+            //        this.onWall = false;
+//
+//
+            //}
+
+           
+
+
+
+
+        </script>
+    </body>
+</html>
